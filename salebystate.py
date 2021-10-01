@@ -132,9 +132,15 @@ args = parser.parse_args(namespace=Str)
 # The script connecting to the 'Adventure Works' database (see 'README.md' for more information).
 with pyodbc.connect('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password) as conn:
     with conn.cursor() as cursor:
-        cursor.execute("SELECT a.StateProvince, p.Name FROM SalesLT.Address a, SalesLT.Product p, SalesLT.CustomerAddress ca, SalesLT.SalesOrderDetail od, SalesLT.SalesOrderHeader oh WHERE p.ProductID = od.ProductID AND od.SalesOrderID = oh.SalesOrderID AND oh.CustomerID = ca.CustomerID AND ca.AddressID = a.AddressID AND a.StateProvince = '%(STATE)s' ORDER BY a.StateProvince ASC;"%{'STATE':states[s.st]})
+        cursor.execute("CREATE SCHEMA Abbreviations")
+        conn.commit()
+        cursor.execute("CREATE TABLE Abbreviations.StateProvince ( Name VARCHAR(255) NOT NULL, Abbreviation VARCHAR(255) NOT NULL )")
+        conn.commit()
+        cursor.execute("INSERT INTO Abbreviations.StateProvince (Name, Abbreviation) VALUES ( N'Alaska', N'AL')")
+        conn.commit()
+        cursor.execute("SELECT TOP 10 a.Name, a.Abbreviation FROM Abbreviations.StateProvince as a ORDER BY a.Name ASC;")
         row = cursor.fetchone()
-        print("State\t\t\tProduct Name")
+        print("State\t\t\tAbbreviation")
         while row:
-            print(str(row[0]) + "\t\t" + str(row[1]))
+            print(str(row[0]) + '\t\t\t' + str(row[1]))
             row = cursor.fetchone()
