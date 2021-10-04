@@ -1,5 +1,9 @@
-# A script based on Microsoft's sample: https://docs.microsoft.com/en-us/azure/azure-sql/database/connect-query-python
-# Note: Requires the creation of an Azure SQL Database: https://docs.microsoft.com/en-us/sql/samples/adventureworks-install-configure?view=sql-server-ver15&tabs=ssms
+"""
+A script based on Microsoft's 2019 version of the 'AdventureWorks' (OLTP) sample database:
+          https://github.com/Microsoft/sql-server-samples/releases/tag/adventureworks
+Note: The previously used light-weight version, 'AdventureWorksLT,' was swapped in favor of the complete version.
+"""
+import argparse
 import pyodbc
 from definitions import connection_string, states, Print
 
@@ -8,6 +12,20 @@ schema = 'Abbreviations'
 table = 'StateProvince'
 col_1 = 'Name'
 col_2 = 'Abbreviation'
+
+# class Str is used to process arguments as state abbreviations; these
+# are then used as a mapping to the full name.
+class Str :
+    pass
+s = Str()
+
+# The parser used to process the command line arguments.
+parser = argparse.ArgumentParser(
+    description='A script returning products sold based on the state in which the sale took place.')
+parser.add_argument(
+    '--st', choices=states.keys(),
+    help='An example: To see sales made in Alabama use \'python salebystate.py --st AL\'')
+args = parser.parse_args(namespace=Str)
 
 # The script connecting to the 'Adventure Works' database (see 'README.md' for more information).
 with pyodbc.connect(connection_string) as conn:
@@ -28,15 +46,26 @@ with pyodbc.connect(connection_string) as conn:
         cursor.executemany(f"""
                             INSERT INTO {schema}.{table} ({col_1}, {col_2})
                             VALUES (?, ?)
-                            """, states)
+                            """, [(abb, states[abb]) for abb in states.keys()])
 
         cursor.execute(f"""
                         SELECT a.{col_1}, a.{col_2} 
                         FROM {schema}.{table} as a 
                         ORDER BY a.{col_1} ASC;
                         """)
-        rows = cursor.fetchall()
 
+        cursor.execute(f"""
+                        SELECT DISTINCT ps.{col_1}, p.{col_1} 
+                        FROM Production.Product p, Sales.SalesOrderDetail od, Sales.SalesOrderHeader oh, Sales.Customer ca, Person.{table} ps
+                        WHERE p.ProductID = od.ProductID 
+                        AND od.SalesOrderID = oh.SalesOrderID 
+                        AND oh.CustomerID = ca.CustomerID 
+                        AND ca.TerritoryID = ps.TerritoryID 
+                        AND ps.{col_1} = '{states[s.st]}' 
+                        ORDER BY ps.{col_1} ASC;
+                        """)
+
+        rows = cursor.fetchall()
         Print(col_1, col_2)
         for row in rows:
-            Print(row.Name, row.Abbreviation)
+            Print(row[0], row[1])

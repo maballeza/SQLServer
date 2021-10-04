@@ -1,5 +1,5 @@
 ### Description:
-A script querying the Azure SQL Database sample, [*Adventure Works*](https://docs.microsoft.com/en-us/sql/samples/adventureworks-install-configure?view=sql-server-ver15&tabs=ssms), for the products sold based on the state in which the sale took place. It requires as an argument the abbreviation of the state of interest.
+A script querying the SQL Database sample, [*Adventure Works*], for the products sold based on the state in which the sale took place. It requires as an argument the abbreviation of the state of interest.
 
 ### Example:
 The following command:
@@ -28,5 +28,8 @@ New Mexico              Touring-1000 Blue, 46
 New Mexico              AWC Logo Cap
 ```
 
-##### Note:
-Running the script requires the creation of an [Azure SQL Database](https://docs.microsoft.com/en-us/sql/samples/adventureworks-install-configure?view=sql-server-ver15&tabs=ssms).
+##### Note: 
+The previously used light-weight version, 'AdventureWorksLT,' was swapped in favor of the complete version both which can be found on [Github].
+
+[*Adventure Works*]:    https://docs.microsoft.com/en-us/sql/samples/adventureworks-install-configure?view=sql-server-ver15&tabs=ssms
+[Github]:   https://github.com/Microsoft/sql-server-samples/releases/tag/adventureworks
